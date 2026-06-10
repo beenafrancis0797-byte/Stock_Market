@@ -107,12 +107,15 @@ st.caption(f"Live data · Yahoo Finance · {start_date} → {end_date}")
 cols = st.columns(len(selected_stocks))
 for col, stock in zip(cols, selected_stocks):
     if stock not in prices.columns:
+        col.metric(label=stock, value="N/A", delta="No data")
         continue
-    total_ret   = (prices[stock].iloc[-1] / prices[stock].iloc[0] - 1) * 100
-    latest      = prices[stock].iloc[-1]
-    daily_ret   = returns[stock].iloc[-1] * 100
-    arrow       = "▲" if daily_ret > 0 else "▼"
-    color_class = "up" if daily_ret > 0 else "down"
+    stock_data = prices[stock].dropna()
+    if len(stock_data) < 2:
+        col.metric(label=stock, value="N/A", delta="Insufficient data")
+        continue
+    total_ret  = (stock_data.iloc[-1] / stock_data.iloc[0] - 1) * 100
+    latest     = stock_data.iloc[-1]
+    daily_ret  = returns[stock].dropna().iloc[-1] * 100 if len(returns[stock].dropna()) > 0 else 0
     col.metric(
         label=stock,
         value=f"${latest:.2f}",
