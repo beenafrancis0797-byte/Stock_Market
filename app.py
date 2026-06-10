@@ -96,8 +96,24 @@ def load_data(tickers, start, end):
 with st.spinner("Fetching live data from Yahoo Finance..."):
     prices = load_data(selected_stocks, str(start_date), str(end_date))
 
+if prices.empty or len(prices) < 2:
+    st.error("No data available for the selected stocks and date range. Please try different selections.")
+    st.stop()
+
+# Keep only columns with enough data
+prices = prices.dropna(axis=1, thresh=10)
+selected_stocks = [s for s in selected_stocks if s in prices.columns]
+
+if not selected_stocks:
+    st.error("No valid stock data found. Please try different tickers.")
+    st.stop()
+
 returns     = prices.pct_change().dropna()
 cum_returns = (1 + returns).cumprod()
+
+if cum_returns.empty or len(cum_returns) < 1:
+    st.error("Not enough data to calculate returns. Please adjust your date range.")
+    st.stop()
 
 # ── TITLE ─────────────────────────────────────────────────────
 st.title("📈 Stock Market Dashboard")
@@ -164,7 +180,7 @@ with tab1:
     annual_ret = returns.mean() * 252
     annual_vol = returns.std() * np.sqrt(252)
     sharpe     = annual_ret / annual_vol
-    total      = cum_returns.iloc[-1] - 1
+    total      = cum_returns.iloc[-1] - 1 if len(cum_returns) > 0 else pd.Series(0, index=prices.columns)
 
     perf = pd.DataFrame({
         "Total Return":      total.map(lambda x: f"{x:.1%}"),
