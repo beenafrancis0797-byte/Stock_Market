@@ -8,7 +8,7 @@
 ![Status](https://img.shields.io/badge/Status-Completed-brightgreen)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-🌐 **Live Demo:** [Stock Market Dashboard](YOUR_STREAMLIT_URL)
+🌐 **Live Demo:** [Stock Market Dashboard](https://stockmarket-y32rfrebvxtvpzis2mdxjp.streamlit.app/)
 
 > A financial data analysis project tracking **5 major stocks (AAPL, GOOGL, MSFT, AMZN, TSLA)** from 2020–2024 — covering cumulative returns, volatility, moving averages, correlation, and risk-return analysis.
 
