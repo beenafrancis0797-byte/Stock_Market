@@ -86,12 +86,25 @@ if not selected_stocks:
 # ── LOAD DATA ─────────────────────────────────────────────────
 @st.cache_data(ttl=3600)
 def load_data(tickers, start, end):
-    raw     = yf.download(tickers, start=start, end=end, auto_adjust=True)
-    if len(tickers) == 1:
-        prices = raw["Close"].to_frame(name=tickers[0])
-    else:
-        prices = raw["Close"]
-    return prices.dropna()
+    try:
+        if len(tickers) == 1:
+            raw = yf.download(tickers[0], start=start, end=end,
+                              auto_adjust=True, progress=False)
+            if raw.empty:
+                return pd.DataFrame()
+            prices = raw[["Close"]].rename(columns={"Close": tickers[0]})
+        else:
+            raw = yf.download(tickers, start=start, end=end,
+                              auto_adjust=True, progress=False)
+            if raw.empty:
+                return pd.DataFrame()
+            prices = raw["Close"]
+            if isinstance(prices, pd.Series):
+                prices = prices.to_frame(name=tickers[0])
+        return prices.ffill().dropna(how="all")
+    except Exception as e:
+        st.error(f"Data fetch error: {e}")
+        return pd.DataFrame()
 
 with st.spinner("Fetching live data from Yahoo Finance..."):
     prices = load_data(selected_stocks, str(start_date), str(end_date))
